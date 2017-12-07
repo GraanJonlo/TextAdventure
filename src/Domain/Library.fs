@@ -1,6 +1,12 @@
 namespace Domain
 
 module Words =
+    type Determiner =
+    | The
+
+    type Preposition =
+    | Up
+
     type Adjective =
     | Opinion of string // unusual, lovely, beautiful
     | Size of string // big, small, tall
@@ -13,19 +19,15 @@ module Words =
     | Type of string // general-purpose, four-sided, U-shaped
     | Purpose of string // cleaning, hammering, cooking
 
-    type Determiner =
-    | The
-
     type Noun = Noun of string
+
+    type Verb = Verb of string
 
     type NounPhrase = {
         head:Noun
         determiner:Determiner option
         adjectives:Adjective list
     }
-
-    type Preposition =
-    | Up
 
     type PrepositionalPhrase = {
         head:Preposition
@@ -36,17 +38,9 @@ module Words =
     | Adverbial of PrepositionalPhrase
     | Object of NounPhrase
 
-    type Verb = Verb of string
-
     type VerbPhrase = {
         head:Verb
         complement:VerbComplement
-    }
-
-    let theNorth = {
-        head = Noun "North"
-        determiner = Some The
-        adjectives = []
     }
 
     let theRedKey = {
