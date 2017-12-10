@@ -1,21 +1,12 @@
 namespace Domain
 
-module Words =
+module TextAdventureDomain =
     type Determiner =
     | A
     | The
-    
-    let detToString followedByAVowel =
-        function
-        | A -> if followedByAVowel then "an" else "a"
-        | The -> "the"
 
     type Preposition =
     | Up
-
-    let pToString =
-        function
-        | Up -> "up"
 
     type Adjective =
     | Opinion of string // unusual, lovely, beautiful
@@ -28,8 +19,6 @@ module Words =
     | Material of string // metal, wood, plastic
     | Type of string // general-purpose, four-sided, U-shaped
     | Purpose of string // cleaning, hammering, cooking
-
-    type AdjectiveSortOrder = Adjective -> int
 
     let adjSortOrder =
         function
@@ -45,25 +34,7 @@ module Words =
         | Purpose _ -> 10
     
     // Allows List.sortBy adjSortOrder adjectives
-
-    let adjToString =
-        function
-        | Opinion x -> x
-        | Size x -> x
-        | PhysicalQuality x -> x
-        | Shape x -> x
-        | Age x -> x
-        | Colour x -> x
-        | Origin x -> x
-        | Material x -> x
-        | Type x -> x
-        | Purpose x -> x
     
-    let adjsToString =
-        List.sortBy adjSortOrder
-        >> Seq.map adjToString
-        >> String.concat ", "
-
     type Noun = Noun of string
 
     type Verb = Verb of string
@@ -73,25 +44,6 @@ module Words =
         determiner:Determiner option
         adjectives:Adjective list
     }
-    
-    let startsWithVowel x =
-        x <> "" && List.contains x.[0] ['a';'e';'i';'o';'u']
-
-    let npToString x =
-        let adjStr = adjsToString x.adjectives
-        
-        let detStr =
-            match x.determiner with
-            | Some y -> detToString (startsWithVowel adjStr) y
-            | None -> ""
-
-        let nounStr =
-            match x.head with
-            | Noun n -> n
-
-        [detStr; adjStr; nounStr]
-        |> Seq.filter (fun x -> x<>"")
-        |> String.concat " "
 
     type PrepositionalPhrase = {
         head:Preposition
@@ -106,6 +58,75 @@ module Words =
         head:Verb
         complement:VerbComplement
     }
+
+    type Item = {
+        noun:Noun
+        adjectives:Adjective list
+        shortDescription:string
+        longDescription:string
+    }
+
+    let npOfItem x = {
+        head = x.noun
+        determiner = Some A
+        adjectives = x.adjectives
+    }
+
+    type ItemMatchResult =
+    | Exact of Item
+    | Ambiguous of Item list
+    | NoMatch
+
+    type MatchItem = Item list -> NounPhrase -> ItemMatchResult
+
+module ConsoleUi =
+    open TextAdventureDomain
+
+    let startsWithVowel x =
+        x <> "" && List.contains x.[0] ['a';'e';'i';'o';'u']
+
+    let detToString followedByAVowel =
+        function
+        | A -> if followedByAVowel then "an" else "a"
+        | The -> "the"
+
+    let pToString =
+        function
+        | Up -> "up"
+
+    let adjToString =
+        function
+        | Opinion x -> x
+        | Size x -> x
+        | PhysicalQuality x -> x
+        | Shape x -> x
+        | Age x -> x
+        | Colour x -> x
+        | Origin x -> x
+        | Material x -> x
+        | Type x -> x
+        | Purpose x -> x
+
+    let adjsToString =
+        List.sortBy adjSortOrder
+        >> Seq.map adjToString
+        >> String.concat ", "
+    
+    let npToString (x:NounPhrase) =
+        let adjStr = adjsToString x.adjectives
+        
+        let detStr =
+            match x.determiner with
+            | Some y -> detToString (startsWithVowel adjStr) y
+            | None -> ""
+
+        let nounStr =
+            match x.head with
+            | Noun n -> n
+
+        [detStr; adjStr; nounStr]
+        |> Seq.filter (fun x -> x<>"")
+        |> String.concat " "
 
     let theRedKey = {
         head = Noun "key"
@@ -125,23 +146,3 @@ module Words =
         head = Verb "get"
         complement = Object theRedKey
     }
-
-    type Item = {
-        noun:Noun
-        adjectives:Adjective list
-        shortDescription:string
-        longDescription:string
-    }
-
-    let npOfItem x = {
-        head = x.noun
-        determiner = Some A
-        adjectives = x.adjectives
-    }
-
-    type ItemMatchResult =
-    | Exact of Item
-    | Ambiguous of Item list
-    | None
-
-    type MatchItem = Item list -> NounPhrase -> ItemMatchResult
