@@ -39,6 +39,13 @@ module TextAdventureDomain =
 
     type Verb = Verb of string
 
+    type Word =
+    | Det of Determiner
+    | P of Preposition
+    | Adj of Adjective
+    | N of Noun
+    | V of Verb
+
     type NounPhrase = {
         head:Noun
         determiner:Determiner option
